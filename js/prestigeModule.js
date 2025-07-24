@@ -1,71 +1,66 @@
 // Module: prestigeModule.js
-// Purpose: Handles prestige system (reset game for permanent bonuses). Basic stub.
-// In idle games, prestige gives multipliers after reset.
-// Detailed comments: Calculates bonus based on total soldiers earned (not implemented fully).
-// Inexperienced users: To enable prestige earlier, change the condition in updatePrestigeButton.
-// Update: Added get/setPrestigePoints for saving/loading, and call saveGame after reset to persist new points.
-// New: Made applyPrestigeBonus() actually update the multiplier in soldiers.js (e.g., +10% per point). No browser refresh needed—UI updates automatically.
-// Note: Multiplier is now always derived from points, ensuring consistent bonuses without save conflicts.
+// Purpose: Handles prestige system (reset game for permanent bonuses).
+// Now uses resources/prestigePoints.js for all PP state.
 
 import { getRecruits, resetRecruits } from './resources/soldiers.js';
-import { setMultiplier, getMultiplier, updateSPS } from './resources/soldiers.js';
+import { setMultiplier, updateSPS } from './resources/soldiers.js';
 import { updateUI } from './uiModule.js';
 import { saveGame } from './platformAdapter.js';
 
-let prestigePoints = 0; // Accumulated points for bonuses.
+import {
+    getPrestigePoints,
+    setPrestigePoints,
+    addPrestigePoints,
+    spendPrestigePoints
+} from './resources/prestigePoints.js';
 
 export function initPrestige() {
     const prestigeButton = document.getElementById('prestige-button');
     prestigeButton.addEventListener('click', () => {
         if (confirm('Prestige? Reset progress for bonus?')) {
-            prestigePoints += Math.floor(Math.sqrt(getRecruits())); // Basic formula: sqrt of soldiers as points.
-            resetRecruits(); // Reset resources.
-            applyPrestigeBonus(); // Apply bonus (now real).
-            updateUI(); // Refresh UI—no browser reload needed.
-            saveGame(); // New: Save immediately after prestige to persist new points and multiplier.
+            const gained = Math.floor(Math.sqrt(getRecruits()));
+            addPrestigePoints(gained); // Use resource module
+            resetRecruits();
+            applyPrestigeBonus();
+            updateUI();
+            updateTechTreeUI?.(); // If available, update tech tree UI
+            saveGame();
         }
     });
-    updatePrestigeButton(); // Initial check.
+    updatePrestigeButton();
 }
 
 function applyPrestigeBonus() {
-    // New: Actually calculate and set multiplier (1 + 0.1 * points). Inexperienced users: Change 0.1 to adjust bonus strength (e.g., 0.05 for weaker).
-    const newMultiplier = 1 + prestigePoints * 0.1;
+    // Multiplier: 1 + 0.1 * prestige points
+    const newMultiplier = 1 + getPrestigePoints() * 0.1;
     setMultiplier(newMultiplier);
-    updateSPS(); // Ensure SPS reflects new multiplier.
-    console.log(`Prestige bonus applied: ${newMultiplier}x production (based on ${prestigePoints} points).`);
+    updateSPS();
+    console.log(`Prestige bonus applied: ${newMultiplier}x production (based on ${getPrestigePoints()} points).`);
 }
 
 export function updatePrestigeButton() {
     const button = document.getElementById('prestige-button');
-    button.disabled = getRecruits() < 100; // Enable only after 100 soldiers.
-    // Call this in updateUI if needed for dynamic checks.
+    button.disabled = getRecruits() < 100;
 }
 
-// New: Get current prestige points (for saving).
-// Inexperienced users: Use this to access points outside this module.
-export function getPrestigePoints() {
-    return prestigePoints;
-}
-
-// New: Set prestige points (for loading saves).
-// Inexperienced users: This overrides the value; use only during load.
-export function setPrestigePoints(val) {
-    prestigePoints = val;
-    applyPrestigeBonus(); // New: Reapply bonus after setting points (for load consistency).
-}
-
-// New: Export for UI display.
-// Inexperienced users: Call this to show points in custom UI elements.
+// For UI display
 export function getPrestigePointsForDisplay() {
-    return prestigePoints;
+    return getPrestigePoints();
 }
 
-export function spendPrestigePoints(amount) {
-    if (prestigePoints >= amount) {
-        prestigePoints -= amount;
+// For tech unlocks and spending
+export function spendPrestigePointsAndApplyBonus(amount) {
+    if (spendPrestigePoints(amount)) {
         applyPrestigeBonus();
+        updateUI();
+        saveGame();
         return true;
     }
     return false;
+}
+
+// For loading saves
+export function setPrestigePointsAndApplyBonus(val) {
+    setPrestigePoints(val);
+    applyPrestigeBonus();
 }
