@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Army Builder Idle Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Army Builder Idle</h1>
+        <div id="recruit-count">Recruits: 0</div>
+        <div id="army-tracker">Army: 0 units | Total Power: 0</div>
+        <button id="recruit-button">Recruit (Manual)</button>
+        
+        <div id="producers">
+            <h2>Training Facilities</h2>
+        </div>
+        
+        <div id="units">
+            <h2>Specialized Units</h2>
+            <div class="unit-buttons"></div>
+            <div class="unit-stats">
+                <div id="archer-stats">Archers: 0 (Power: 2)</div>
+                <div id="knight-stats">Knights: 0 (Power: 5)</div>
+                <div id="mage-stats">Mages: 0 (Power: 8)</div>
+            </div>
+        </div>
+
+        <div id="tech-tree">
+            <h2>Technology Tree</h2>
+            <div id="tier1-techs"></div>
+        </div>
+
+        <div id="prestige-section">
+            <button id="prestige-button" disabled>Prestige (Reset for Bonus)</button>
+            <button id="save-button">Save Game</button>
+            <button id="wipe-save-button">Wipe Save</button>
+        </div>
+    </div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
